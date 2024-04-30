@@ -10,7 +10,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.0"),
-        .package(name: "AlfredJSONEncoder", path: "AlfredJSONEncoder")
+        .package(name: "AlfredJSONEncoder", path: "../AlfredJSONEncoder")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
