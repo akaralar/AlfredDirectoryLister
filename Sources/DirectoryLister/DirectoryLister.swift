@@ -56,13 +56,18 @@ struct ListDirectoryMain: ParsableCommand {
         var isDir: ObjCBool = false
         if fm.fileExists(atPath: url.path(), isDirectory: &isDir), isDir.boolValue {
             var sortedFiles = files(in: url, matching: query, maxItems: maxItems)
+            let hasNoResults = sortedFiles.isEmpty
             if shouldIncludeInputDirectory {
                 sortedFiles.insert(File(url: url, name: directory, addedDate: Date()), at: 0)
             }
-            let alfredItems = AlfredList(items: sortedFiles.map(AlfredListItem.init(file:)))
-            print(try alfredItems.toJSON())
+            var alfredList = AlfredList(items: sortedFiles.map(AlfredListItem.init(file:)))
+            if hasNoResults {
+                alfredList.items.append(AlfredListItem(error: "No results matching input"))
+            }
+            print(try alfredList.toJSON())
         } else {
-            print("Directory not found at given path.")
+            let alfredList = AlfredList(items: [AlfredListItem(error: "Directory not found at given path.")])
+            print(try alfredList.toJSON())
         }
     }
 
@@ -81,7 +86,6 @@ struct ListDirectoryMain: ParsableCommand {
                   let name = resourceValues.name,
                   let addedDate = resourceValues.addedToDirectoryDate
             else {
-                print("Can't extract resource values for \(fileURL)")
                 continue
             }
 
@@ -158,6 +162,25 @@ extension AlfredListItem {
             action: .universalAction(.file(file.path)),
             text: Text(copy: file.path, largeType: file.name),
             quicklookURL: file.path,
+            skipKnowledge: true
+        )
+    }
+
+    init(error text: String) {
+        self.init(
+            uid: nil,
+            title: text,
+            subtitle: nil,
+            arguments: .single(""),
+            icon: Icon(path: "./error.png"),
+            isValid: false,
+            match: nil,
+            autocomplete: nil,
+            type: .default,
+            modifierActions: nil,
+            action: nil,
+            text: nil,
+            quicklookURL: nil,
             skipKnowledge: true
         )
     }
