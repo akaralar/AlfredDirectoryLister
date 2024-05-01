@@ -55,24 +55,6 @@ struct InputDirectory {
 }
 
 private extension FileManager {
-    func expandingTilde(in path: String) -> String? {
-        if path.starts(with: "~/") {
-            return path.replacingOccurrences(
-                of: "~/",
-                with: homeDirectoryForCurrentUser.path()
-            ).removingPercentEncoding!
-        } else if path.starts(with: "~") && path.count > 0 {
-            return nil
-        } else if path == "~" {
-            return path.replacingOccurrences(
-                of: "~",
-                with: homeDirectoryForCurrentUser.path()
-            ).removingPercentEncoding!
-        } else {
-            return path
-        }
-    }
-
     func fileURL(for directory: String) -> URL? {
         if directory.starts(with: "~") {
             if let path = expandingTilde(in: directory) {
@@ -84,6 +66,24 @@ private extension FileManager {
             return URL(fileURLWithPath: directory, isDirectory: true)
         } else {
             return homeDirectoryForCurrentUser.appending(path: directory)
+        }
+    }
+
+    private func expandingTilde(in path: String) -> String? {
+        if path.starts(with: "~/") {
+            return path.replacingOccurrences(
+                of: "~/",
+                with: homeDirectoryForCurrentUser.path(percentEncoded: false)
+            )
+        } else if path.starts(with: "~") && path.count > 0 {
+            return nil
+        } else if path == "~" {
+            return path.replacingOccurrences(
+                of: "~",
+                with: homeDirectoryForCurrentUser.path(percentEncoded: false)
+            )
+        } else {
+            return path
         }
     }
 }
