@@ -37,14 +37,14 @@ struct ListDirectoryMain: ParsableCommand {
     var shouldIncludeInputDirectory: Bool = false
 
     @Flag(
-        name: [.customShort("c"), .customLong("ignore-case")],
+        name: [.customShort("c"), .customLong("case-insensitive")],
         help: "Case-insensitive matching of query"
     )
-    var shouldIgnoreCase: Bool = false
+    var caseInsensitive: Bool = false
 
     mutating func run() throws {
         if let inputDir = InputDirectory(directory: directory) {
-            let sortedFiles = inputDir.files(matching: query, caseInsensitive: shouldIgnoreCase, maxItems: maxItems)
+            let sortedFiles = inputDir.files(matching: query, caseInsensitive: caseInsensitive, maxItems: maxItems)
             var alfredList = if sortedFiles.isEmpty {
                 AlfredList(items: [Error(text: "No results matching input")])
             } else {
