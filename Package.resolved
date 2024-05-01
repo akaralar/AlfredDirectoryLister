@@ -1,6 +1,15 @@
 {
-  "originHash" : "f2516a3ce518946f30881d54bbbf847b7a3b22080a4d5db2b4da52b8beebee4c",
+  "originHash" : "411001d87f40b90653e0119af3b2fd8f1e4762a8c54a2dd8449b2f64ed21c46c",
   "pins" : [
+    {
+      "identity" : "alfredjsonencoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/akaralar/AlfredJSONEncoder",
+      "state" : {
+        "revision" : "63fe03859ae3872d443b2babb0d5fff3fc45c24b",
+        "version" : "1.0.0"
+      }
+    },
     {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
