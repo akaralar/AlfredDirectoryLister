@@ -26,7 +26,7 @@ struct ListDirectoryMain: ParsableCommand {
 
     @Option(
         name: [.short, .customLong("max")],
-        help: "Maximum items to return. If zero, all items will be returned"
+        help: "Maximum items to return. If zero or negative, all items will be returned"
     )
     var maxItems: Int = 0
 
@@ -43,144 +43,24 @@ struct ListDirectoryMain: ParsableCommand {
     var shouldIgnoreCase: Bool = false
 
     mutating func run() throws {
-        let fm = FileManager.default
-        
-        let url = if directory.starts(with: "~") {
-            URL(fileURLWithPath: directory.expandingTilde(), isDirectory: true)
-        } else if directory.starts(with: "/") {
-            URL(fileURLWithPath: directory, isDirectory: true)
-        } else {
-            FileManager.default.homeDirectoryForCurrentUser.appending(path: directory)
-        }
-        var isDir: ObjCBool = false
-        if fm.fileExists(atPath: url.path().removingPercentEncoding!, isDirectory: &isDir), isDir.boolValue {
-            var sortedFiles = files(in: url, matching: query, maxItems: maxItems)
-            let hasNoResults = sortedFiles.isEmpty
-            if shouldIncludeInputDirectory {
-                sortedFiles.insert(File(url: url, name: directory, addedDate: Date()), at: 0)
-            }
-            var alfredList = AlfredList(items: sortedFiles.map(AlfredListItem.init(file:)))
-            if hasNoResults {
-                alfredList.items.append(AlfredListItem(error: "No results matching input"))
-            }
-            print(try alfredList.toJSON())
-        } else {
-            let alfredList = AlfredList(items: [AlfredListItem(error: "Directory not found at given path.")])
-            print(try alfredList.toJSON())
-        }
-    }
-
-    func files(in url: URL, matching query: String?, maxItems: Int = 0) -> [File] {
-        let resourceKeys = Set<URLResourceKey>([.nameKey, .addedToDirectoryDateKey])
-        let fm = FileManager.default
-        let directoryEnumerator = fm.enumerator(
-            at: url,
-            includingPropertiesForKeys: Array(resourceKeys),
-            options: [.skipsPackageDescendants, .skipsSubdirectoryDescendants]
-        )!
-
-        var files: [File] = []
-        for case let fileURL as URL in directoryEnumerator {
-            guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
-                  let name = resourceValues.name,
-                  let addedDate = resourceValues.addedToDirectoryDate
-            else {
-                continue
-            }
-
-            let file = File(url: fileURL, name: name, addedDate: addedDate)
-            guard let query = query else {
-                files.append(file)
-                continue
-            }
-
-            let (q, n) = if shouldIgnoreCase {
-                (query.lowercased(), name.lowercased())
+        if let inputDir = InputDirectory(directory: directory) {
+            let sortedFiles = inputDir.files(matching: query, caseInsensitive: shouldIgnoreCase, maxItems: maxItems)
+            var alfredList = if sortedFiles.isEmpty {
+                AlfredList(items: [Error(text: "No results matching input")])
             } else {
-                (query, name)
+                AlfredList(items: sortedFiles)
             }
 
-            guard n.firstMatch(of: regexPattern(for: q)) != nil else { continue }
-            files.append(file)
+            if shouldIncludeInputDirectory {
+                alfredList.items.insert(File(inputDir: inputDir).asAlfredListItem, at: 0)
+            }
+
+            print(try alfredList.toJSON())
         }
-
-        let sorted = files.sorted { $0.addedDate > $1.addedDate }
-        return maxItems == 0 ? sorted : Array(sorted.prefix(maxItems))
-    }
-
-    private func regexPattern(for query: String) -> some RegexComponent {
-        let fuzzyPattern = query.map { "\($0).*" }.joined()
-        return try! Regex(fuzzyPattern)
-    }
-}
-
-struct File {
-    var path: String
-    var name: String
-    var addedDate: Date
-
-    init(url: URL, name: String, addedDate: Date) {
-        self.path = url.path(percentEncoded: false)
-        self.name = name
-        self.addedDate = addedDate
-    }
-}
-
-extension String {
-    func expandingTilde() -> String {
-        if starts(with: "~/") {
-            return replacingOccurrences(
-                of: "~/",
-                with: FileManager.default.homeDirectoryForCurrentUser.path()
-            ).removingPercentEncoding!
-
-        } else if starts(with: "~") {
-            return replacingOccurrences(
-                of: "~",
-                with: FileManager.default.homeDirectoryForCurrentUser.path()
-            ).removingPercentEncoding!
-        } else {
-            return self
+        else {
+            let list = AlfredList(items: [Error(text: "Directory not found at given path.")])
+            print(try list.toJSON())
         }
     }
 }
 
-extension AlfredListItem {
-    init(file: File) {
-        self.init(
-            uid: nil,
-            title: file.name,
-            subtitle: file.path,
-            arguments: .single(file.path),
-            icon: Icon(path: file.path, type: .fileIcon),
-            isValid: true,
-            match: nil,
-            autocomplete: file.name,
-            type: .skipCheck,
-            modifierActions: nil,
-            action: .universalAction(.file(file.path)),
-            text: Text(copy: file.path, largeType: file.name),
-            quicklookURL: file.path,
-            skipKnowledge: true
-        )
-    }
-
-    init(error text: String) {
-        self.init(
-            uid: nil,
-            title: text,
-            subtitle: nil,
-            arguments: .single(""),
-            icon: Icon(path: "./error.png"),
-            isValid: false,
-            match: nil,
-            autocomplete: nil,
-            type: .default,
-            modifierActions: nil,
-            action: nil,
-            text: nil,
-            quicklookURL: nil,
-            skipKnowledge: true
-        )
-    }
-}
