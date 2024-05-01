@@ -43,7 +43,7 @@ struct ListDirectoryMain: ParsableCommand {
 
     mutating func run() throws {
         guard let inputDir = InputDirectory(directory: directory) else {
-            let list = AlfredList(items: [Error(text: "Directory not found at given path.")])
+            let list = AlfredList(items: [Error(text: "Invalid directory")])
             print(try list.toJSON())
             return
         }
@@ -58,7 +58,7 @@ struct ListDirectoryMain: ParsableCommand {
         if shouldIncludeInputDirectory {
             alfredList.items.insert(File(inputDir: inputDir).asAlfredListItem, at: 0)
         }
-        
+
         print(try alfredList.toJSON())
     }
 }
