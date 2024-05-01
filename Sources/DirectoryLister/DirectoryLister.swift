@@ -52,9 +52,8 @@ struct ListDirectoryMain: ParsableCommand {
         } else {
             FileManager.default.homeDirectoryForCurrentUser.appending(path: directory)
         }
-
         var isDir: ObjCBool = false
-        if fm.fileExists(atPath: url.path(), isDirectory: &isDir), isDir.boolValue {
+        if fm.fileExists(atPath: url.path().removingPercentEncoding!, isDirectory: &isDir), isDir.boolValue {
             var sortedFiles = files(in: url, matching: query, maxItems: maxItems)
             let hasNoResults = sortedFiles.isEmpty
             if shouldIncludeInputDirectory {
