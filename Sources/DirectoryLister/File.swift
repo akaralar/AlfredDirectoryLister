@@ -51,7 +51,7 @@ extension File: AlfredListItemConvertible {
 }
 
 private extension String {
-    func fuzzyMatchPattern() -> some RegexComponent {
+    var fuzzyMatchPattern: some RegexComponent {
         let fuzzyPattern = map { "\($0).*" }.joined()
         return try! Regex(fuzzyPattern)
     }
