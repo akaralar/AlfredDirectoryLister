@@ -15,16 +15,11 @@ struct InputDirectory {
     init?(directory: String) {
         fm = FileManager.default
         self.directory = directory
-        if directory.starts(with: "~") {
-            if let path = directory.expandingTilde() {
-                url = URL(fileURLWithPath: path, isDirectory: true)
-            } else {
-                return nil
-            }
-        } else if directory.starts(with: "/") {
-            url = URL(fileURLWithPath: directory, isDirectory: true)
+
+        if let url = fm.fileURL(for: directory) {
+            self.url = url
         } else {
-            url = fm.homeDirectoryForCurrentUser.appending(path: directory)
+            return nil
         }
 
         path = url.path(percentEncoded: false)
@@ -70,6 +65,22 @@ private extension String {
             return nil
         } else {
             return self
+        }
+    }
+}
+
+private extension FileManager {
+    func fileURL(for directory: String) -> URL? {
+        if directory.starts(with: "~") {
+            if let path = directory.expandingTilde() {
+                return URL(fileURLWithPath: path, isDirectory: true)
+            } else {
+                return nil
+            }
+        } else if directory.starts(with: "/") {
+            return URL(fileURLWithPath: directory, isDirectory: true)
+        } else {
+            return homeDirectoryForCurrentUser.appending(path: directory)
         }
     }
 }
