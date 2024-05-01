@@ -131,8 +131,8 @@ extension String {
     func expandingTilde() -> String {
         if starts(with: "~/") {
             return replacingOccurrences(
-                of: "~",
-                with: FileManager.default.homeDirectoryForCurrentUser.path().dropLast()
+                of: "~/",
+                with: FileManager.default.homeDirectoryForCurrentUser.path()
             ).removingPercentEncoding!
 
         } else if starts(with: "~") {
