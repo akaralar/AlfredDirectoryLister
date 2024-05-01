@@ -61,8 +61,13 @@ private extension String {
                 of: "~/",
                 with: FileManager.default.homeDirectoryForCurrentUser.path()
             ).removingPercentEncoding!
-        } else if starts(with: "~") {
+        } else if starts(with: "~") && count > 0 {
             return nil
+        } else if self == "~" {
+            return replacingOccurrences(
+                of: "~",
+                with: FileManager.default.homeDirectoryForCurrentUser.path()
+            ).removingPercentEncoding!
         } else {
             return self
         }
