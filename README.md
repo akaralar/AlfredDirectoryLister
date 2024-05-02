@@ -41,7 +41,7 @@ run:
 swift build -c release
 ```
 
-This builds the binary used in the script filter and places it in `./.build/release/directory-lister
+This builds the binary used in the script filter and places it in `./.build/release/directory-lister`
 
 # Acknowledgement
 
