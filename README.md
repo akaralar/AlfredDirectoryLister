@@ -33,6 +33,20 @@ OPTIONS:
 1. Clone the repo.
 2. Double-click the "AlfredListFolders.alfredworkflow" to install.
 
+# Building
+
+You need to have [Swift](https://www.swift.org/install/) installed in your system, then `cd` into the repo folder and 
+run:
+```bash
+swift build -c release
+```
+
+This builds the binary used in the script filter and places it in `./.build/release/directory-lister
+
 # Acknowledgement
+
 This workflow is heavily inspired by [Recent Downloads Workflow](https://github.com/ddjfreedom/recent-downloads-alfred-v2/).
+While that workflow has many useful features that this workflow doesn't have, the performance was sometimes 
+unsatisfactory. I also wanted to have the same functionality for other folders and I wanted to have the main directory 
+as the topmost result. That's how this workflow came to be. 
 
